@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+      {
+        "id": "target",
+        "type": "promptString",
+        "description": "레슨 타깃명 (예: lec02_span)"
+      }
+    ],
+    "tasks": [
+      { "label": "cmake-config", "type": "shell", "command": "cmake -B build" },
+      { "label": "cmake-build",  "type": "shell", "command": "cmake --build build -j", "dependsOn": ["cmake-config"] },
+      {
+        "label": "build:one",
+        "type": "shell",
+        "command": "cmake --build build -t ${input:target}",
+        "dependsOn": ["cmake-config"]
+      },
+      {
+        "label": "run:one",
+        "type": "shell",
+        "command": "./build/${input:target}",
+        "problemMatcher": [],
+        "dependsOn": ["build:one"]
+      }
+    ]
+  }
+  
