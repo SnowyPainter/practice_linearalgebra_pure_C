@@ -111,19 +111,45 @@ void viz_close(Viz *v) {
 }
 
 int viz_text(Viz *v, int x, int y, const char *utf8, RGB color) {
-  SDL_Color col = {(Uint8)color.r, (Uint8)color.g, (Uint8)color.b, 255};
-  SDL_Surface *s = TTF_RenderUTF8_Blended(v->font, utf8, col);
-  if (!s)
-    return -1;
-  SDL_Texture *t = SDL_CreateTextureFromSurface(v->ren, s);
-  if (!t) {
-    SDL_FreeSurface(s);
-    return -1;
+  SDL_Color col = { (Uint8)color.r, (Uint8)color.g, (Uint8)color.b, 255 };
+  const char *p = utf8;
+  int line_skip = TTF_FontLineSkip(v->font); // 권장 줄 간격
+
+  while (*p) {
+      // 한 줄 추출
+      const char *nl = strchr(p, '\n');
+      size_t len = nl ? (size_t)(nl - p) : strlen(p);
+
+      // 빈 줄도 높이만 내려가게 처리
+      if (len == 0) {
+          y += line_skip;
+          p = nl ? nl + 1 : p + 0; // nl 없으면 루프 끝나서 반환됨
+          if (!nl) break;
+          continue;
+      }
+
+      // 부분 문자열 렌더링
+      char buf[2048];
+      if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+      memcpy(buf, p, len); buf[len] = '\0';
+
+      SDL_Surface *s = TTF_RenderUTF8_Blended(v->font, buf, col);
+      if (!s) return -1;
+
+      SDL_Texture *t = SDL_CreateTextureFromSurface(v->ren, s);
+      if (!t) { SDL_FreeSurface(s); return -1; }
+
+      SDL_Rect dst = { x, y, s->w, s->h };
+      SDL_RenderCopy(v->ren, t, NULL, &dst);
+
+      y += line_skip; // 다음 줄로 내려가기
+
+      SDL_DestroyTexture(t);
+      SDL_FreeSurface(s);
+
+      if (!nl) break;
+      p = nl + 1;
   }
-  SDL_Rect dst = {x, y, s->w, s->h};
-  SDL_RenderCopy(v->ren, t, NULL, &dst);
-  SDL_DestroyTexture(t);
-  SDL_FreeSurface(s);
   return 0;
 }
 
