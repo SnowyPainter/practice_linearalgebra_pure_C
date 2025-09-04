@@ -49,7 +49,8 @@ Matrix* matrix_copy(const Matrix* m);
 void matrix_set(Matrix* m, int row, int col, double value);
 double matrix_get(const Matrix* m, int row, int col);
 void matrix_print(const Matrix* m, const char* name);
-
+Matrix* matrix_get_column(const Matrix* m, int col);
+Matrix* matrix_get_row(const Matrix* m, int row);
 // Matrix arithmetic (dynamic)
 Matrix* matrix_add(const Matrix* A, const Matrix* B);
 Matrix* matrix_subtract(const Matrix* A, const Matrix* B);

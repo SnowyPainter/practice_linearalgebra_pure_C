@@ -162,6 +162,26 @@ void matrix_print(const Matrix* m, const char* name) {
     printf("\n");
 }
 
+Matrix* matrix_get_column(const Matrix* m, int col) {
+    if (!m || col < 0 || col >= m->cols) return NULL;
+    Matrix* result = matrix_create(m->rows, 1);
+    if (!result) return NULL;
+    for (int i = 0;i < m->rows;i++) {
+        matrix_set(result, i, 0, matrix_get(m, i, col));
+    }
+    return result;
+}
+
+Matrix* matrix_get_row(const Matrix* m, int row) {
+    if (!m || row < 0 || row >= m->rows) return NULL;
+    Matrix* result = matrix_create(1, m->cols);
+    if (!result) return NULL;
+    for (int i = 0;i < m->cols;i++) {
+        matrix_set(result, 0, i, matrix_get(m, row, i));
+    }
+    return result;
+}
+
 // Matrix arithmetic
 Matrix* matrix_add(const Matrix* A, const Matrix* B) {
     if (!A || !B || A->rows != B->rows || A->cols != B->cols) return NULL;
