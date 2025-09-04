@@ -1,5 +1,6 @@
 #ifdef USE_SDL
 #include "viz.h"
+#include "color.h"
 
 
 int viz_open(Viz *v, const char *title, int w, int h) {
@@ -51,14 +52,14 @@ int viz_open(Viz *v, const char *title, int w, int h) {
   return 0;
 }
 
-void viz_clear(Viz *v, int r, int g, int b) {
+void viz_clear(Viz *v, RGB color) {
   SDL_SetRenderDrawBlendMode(v->ren, SDL_BLENDMODE_NONE);
-  SDL_SetRenderDrawColor(v->ren, (Uint8)r, (Uint8)g, (Uint8)b, 255);
+  SDL_SetRenderDrawColor(v->ren, (Uint8)color.r, (Uint8)color.g, (Uint8)color.b, 255);
   SDL_RenderClear(v->ren);
 }
 
-int viz_line(Viz *v, int x1, int y1, int x2, int y2, int r, int g, int b) {
-  SDL_SetRenderDrawColor(v->ren, (Uint8)r, (Uint8)g, (Uint8)b, 255);
+int viz_line(Viz *v, int x1, int y1, int x2, int y2, RGB color) {
+  SDL_SetRenderDrawColor(v->ren, (Uint8)color.r, (Uint8)color.g, (Uint8)color.b, 255);
 
   // 1) 기본 라인
   if (SDL_RenderDrawLine(v->ren, x1, y1, x2, y2) == 0)
@@ -109,8 +110,8 @@ void viz_close(Viz *v) {
   SDL_Quit();
 }
 
-int viz_text(Viz *v, int x, int y, const char *utf8, int r, int g, int b) {
-  SDL_Color col = {(Uint8)r, (Uint8)g, (Uint8)b, 255};
+int viz_text(Viz *v, int x, int y, const char *utf8, RGB color) {
+  SDL_Color col = {(Uint8)color.r, (Uint8)color.g, (Uint8)color.b, 255};
   SDL_Surface *s = TTF_RenderUTF8_Blended(v->font, utf8, col);
   if (!s)
     return -1;
@@ -127,12 +128,12 @@ int viz_text(Viz *v, int x, int y, const char *utf8, int r, int g, int b) {
 }
 
 void viz_arrow(Viz *v, float ox, float oy, float vx, float vy, float scale,
-               float cx, float cy, int r, int g, int b, const char *label) {
+               float cx, float cy, RGB color, const char *label) {
   // 본체
   int x0, y0, x1, y1;
   world2screen(ox, oy, cx, cy, scale, &x0, &y0);
   world2screen(ox + vx, oy + vy, cx, cy, scale, &x1, &y1);
-  viz_line(v, x0, y0, x1, y1, r, g, b);
+  viz_line(v, x0, y0, x1, y1, color);
 
   // 화살촉
   float len = sqrtf(vx * vx + vy * vy);
@@ -150,19 +151,19 @@ void viz_arrow(Viz *v, float ox, float oy, float vx, float vy, float scale,
                  cy, scale, &ax, &ay);
     world2screen(ox + vx - lx * (ah / scale), oy + vy - ly * (ah / scale), cx,
                  cy, scale, &bx, &by);
-    viz_line(v, x1, y1, ax, ay, r, g, b);
-    viz_line(v, x1, y1, bx, by, r, g, b);
+    viz_line(v, x1, y1, ax, ay, color);
+    viz_line(v, x1, y1, bx, by, color);
   }
 
   // 라벨
   if (label && *label) {
     int tx = x1 + 6, ty = y1 - 6;
-    viz_text(v, tx, ty, label, r, g, b);
+    viz_text(v, tx, ty, label, color);
   }
 }
 
 void viz_angle(Viz *v, float ax, float ay, float bx, float by, float radius,
-               float scale, float cx, float cy, int r, int g, int b,
+               float scale, float cx, float cy, RGB color,
                char *out_deg_text, size_t out_len) {
   float na = sqrtf(ax * ax + ay * ay), nb = sqrtf(bx * bx + by * by);
   if (na < 1e-6f || nb < 1e-6f)
@@ -191,7 +192,7 @@ void viz_angle(Viz *v, float ax, float ay, float bx, float by, float radius,
     int sx, sy;
     world2screen(px, py, cx, cy, scale, &sx, &sy);
     if (i > 0)
-      viz_line(v, lastx, lasty, sx, sy, r, g, b);
+      viz_line(v, lastx, lasty, sx, sy, color);
     lastx = sx;
     lasty = sy;
   }
@@ -202,7 +203,7 @@ void viz_angle(Viz *v, float ax, float ay, float bx, float by, float radius,
   world2screen(cosf(mid) * (radius + 0.2f), sinf(mid) * (radius + 0.2f), cx, cy,
                scale, &tx, &ty);
   if (out_deg_text && out_len)
-    viz_text(v, tx, ty, out_deg_text, r, g, b);
+    viz_text(v, tx, ty, out_deg_text, color);
 }
 
 #endif
