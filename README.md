@@ -10,3 +10,9 @@ To Run a lession,
 ```
 CTRL + SHIFT + P -> Select [RUN TASK] -> run:one
 ```
+
+## Development Settings
+
+```sh
+sudo apt install -y build-essential cmake git pkg-config gdb     clang clang-format lld ccache     libopenblas-dev liblapacke-dev liblapack-dev libgsl-dev     libsdl2-dev libsdl2-ttf-dev gnuplot
+```
